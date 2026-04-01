@@ -191,7 +191,7 @@ int allOddBits(int x)
  */
 int negate(int x)
 {
-  return 2;
+  return (~x + 1);
 }
 // 3
 /*
@@ -199,13 +199,17 @@ int negate(int x)
  *   Example: isAsciiDigit(0x35) = 1.
  *            isAsciiDigit(0x3a) = 0.
  *            isAsciiDigit(0x05) = 0.
+ *   0x30 = 0011 0000 = 48
+ *   0x39 = 0011 1001 = 57
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 15
  *   Rating: 3
+ *  This function works by seeing if x - 0x30 or 0x39 - x is negative, use >> 31 to extract
+ *  the negative MSB and see if it is negative
  */
 int isAsciiDigit(int x)
 {
-  return 2;
+  return !(((x + (~0x30 + 1)) >> 31) | ((0x39 + (~x + 1)) >> 31));
 }
 /*
  * conditional - same as x ? y : z
