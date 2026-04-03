@@ -204,8 +204,9 @@ int negate(int x)
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 15
  *   Rating: 3
- *  This function works by seeing if x - 0x30 or 0x39 - x is negative, use >> 31 to extract
- *  the negative MSB and see if it is negative
+ *  This function works by seeing if x - 0x30 or 0x39 - x is negative,
+ *  meaning either x is less than 0x30 or greater than 0x39 (so not in range)
+ *  use >> 31 to extract the negative MSB and see if it is negative
  */
 int isAsciiDigit(int x)
 {
