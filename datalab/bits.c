@@ -254,10 +254,17 @@ int isLessOrEqual(int x, int y)
  *   Legal ops: ~ & ^ | + << >>
  *   Max ops: 12
  *   Rating: 4
+ * This function works by first x or with negation x,
+ * if x is non-zero, this returns MSB of 1, if 0 MSB is 0
+ * This works as the negation of 0 is 0, for non-zero it is it's negative (MSB 1)
+ * Right shift by 31 to isolate the MSB to the LSB
+ * If MSB was 1, we are left with -1, if MSB 0 we have 0.
+ * If MSB was 1, then x was non-zero, so add one to reutrn 0
+ * If MSB was 0, add 1 to return 1.
  */
 int logicalNeg(int x)
 {
-  return 2;
+  return ((((x | (~x + 1)) >> 31) + 1));
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
