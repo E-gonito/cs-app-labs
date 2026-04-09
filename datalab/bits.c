@@ -218,10 +218,17 @@ int isAsciiDigit(int x)
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 16
  *   Rating: 3
+ * This function works by first checking if x is zero or non-zero (T or F)
+ * We create a mask from the bool by negating (0 gives all 0x0..0, 1 gives 0xF...F)
+ * Then, return m & y or ~m and z. One of these will be 0 depending on x.
+ * If x is true, mask is 0xf..f, so y survives, else if 0x0..0, it is Bitwise NOT with z
+ * and z is returned.
  */
 int conditional(int x, int y, int z)
 {
-  return 2;
+  int b = !!x;
+  int m = ~b + 1;
+  return ((m & y) | (~m & z));
 }
 /*
  * isLessOrEqual - if x <= y  then return 1, else return 0
@@ -229,10 +236,15 @@ int conditional(int x, int y, int z)
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 24
  *   Rating: 3
+ * This function works by negating x, and adding it to y (y - x).
+ * If the result is negative (so x is bigger than y),
+ * after >> 31 we left with 1 (MSB), so with ! it returns 0
+ * Else, if positive (x is less than or equal to y)
+ * after >> 31 we are left with 0, so with ! returns 1
  */
 int isLessOrEqual(int x, int y)
 {
-  return 2;
+  return !((y + (~x + 1)) >> 31);
 }
 // 4
 /*
