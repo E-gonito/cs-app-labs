@@ -277,6 +277,19 @@ int logicalNeg(int x)
  *  Legal ops: ! ~ & ^ | + << >>
  *  Max ops: 90
  *  Rating: 4
+ * This function works by first creating a mask, which is all 1s (0xFFFFFFFF)
+ * If negative, and all 0s (0x00000000) if positive.
+ * If negative, & with the flipped x which preserves the bit pattern and
+ * makes the right hand side of | 0 so does not get chosen for b.
+ * Else, if x is positive the left side becomes 0, and the bit pattern it preserved.
+ * (We must add + 1 to the end)
+ * Next, we use binary search (Keep halving) to count the bits used in the bit pattern.
+ * For each check, we right shift by a power of 2 and check if zero or non-zero with !!
+ * if 0 then there were no bits to the left, if 1 then there were bits to the left.
+ * We shift left by the decimal number we right shift (left shift by decimal 16, 16 is represented
+ * by the 3rd bit so shift left by 4) to preserve the count and save it.
+ * We then can half the bit pattern by shifting right and repeat.
+ * We then sum the result at the end and plus 1 (for the sign bit) and b
  */
 int howManyBits(int x)
 {
