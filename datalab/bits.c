@@ -318,10 +318,27 @@ int howManyBits(int x)
  *   Legal ops: Any integer/unsigned operations incl. ||, &&. also if, while
  *   Max ops: 30
  *   Rating: 4
+ * This function works by seperating the 3 cases if ifs, the 3 cases depends on the exp field.
+ * If the exp is all 1, (11111111 or 0xFF), this is NaN, so return uf
+ * If exp is 0, this is a denormalised vale (very close to 0), so preserve the sign bit,
+ * then left shift by 1, *2 the precision and covers edge case where 23rd bit is 1, becomes normalised.
+ * Else (normalised value), increment the exp by field by 1.
+ *
  */
 unsigned floatScale2(unsigned uf)
 {
-  return 2;
+  int exp = (uf & (0xFF << 23)) >> 23;
+  if (exp == 0xFF)
+    return uf;
+  if (exp == 0)
+  {
+    int sign = uf & (0x1 << 31);
+    return sign | (uf << 1);
+  }
+  else
+  {
+    return uf + (0x1 << 23);
+  }
 }
 /*
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
