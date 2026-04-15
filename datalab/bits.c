@@ -318,12 +318,11 @@ int howManyBits(int x)
  *   Legal ops: Any integer/unsigned operations incl. ||, &&. also if, while
  *   Max ops: 30
  *   Rating: 4
- * This function works by seperating the 3 cases if ifs, the 3 cases depends on the exp field.
+ * This function works by seperating the 3 cases to ifs, the 3 cases depends on the exp field.
  * If the exp is all 1, (11111111 or 0xFF), this is NaN, so return uf
- * If exp is 0, this is a denormalised vale (very close to 0), so preserve the sign bit,
+ * If exp is 0, this is a denormalised value (very close to 0), so preserve the sign bit,
  * then left shift by 1, *2 the precision and covers edge case where 23rd bit is 1, becomes normalised.
  * Else (normalised value), increment the exp by field by 1.
- *
  */
 unsigned floatScale2(unsigned uf)
 {
@@ -336,9 +335,7 @@ unsigned floatScale2(unsigned uf)
     return sign | (uf << 1);
   }
   else
-  {
     return uf + (0x1 << 23);
-  }
 }
 /*
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
@@ -351,10 +348,37 @@ unsigned floatScale2(unsigned uf)
  *   Legal ops: Any integer/unsigned operations incl. ||, &&. also if, while
  *   Max ops: 30
  *   Rating: 4
+ * This function works by consdiering 5 cases. The first case is when exp is all 1, meaning infinity or NaN
+ * Second case is when exp is all 0, so the integer is always 0
+ * Third case is when the true exp is negative, so it must be very small and so integer is 0
+ * Fourth case when the true exp is bigger than 31 and so would overflow, so return big
+ * Fifth case is a normalised value, so convert exp to true exponent.
+ * Then, calculate the magnitude with precision of the final value by
+ * adding back the implicit 1 at the 23rd bit and right shift it back
+ * to remove the trailing 0 bits.
+ * Then, negate the result if the sign was negative.
  */
 int floatFloat2Int(unsigned uf)
 {
-  return 2;
+  int sign = uf & (0x1 << 31);
+  int exp = (uf & (0xFF << 23)) >> 23;
+  int frac = uf & (((0x7F << 16) | (0xFF << 8)) | 0xFF);
+  if (exp == 0xFF)
+    return 0x80000000u;
+  if (exp == 0)
+    return 0;
+  if (exp < 127)
+    return 0;
+  if (exp >= 158)
+    return 0x80000000u;
+  else
+  {
+    int E = exp - 127;
+    int result = (frac | (1 << 23)) >> (23 - E);
+    if (sign)
+      return -result;
+    return result;
+  }
 }
 /*
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
