@@ -392,8 +392,22 @@ int floatFloat2Int(unsigned uf)
  *   Legal ops: Any integer/unsigned operations incl. ||, &&. Also if, while
  *   Max ops: 30
  *   Rating: 4
+ * This function works by considering 4 cases.
+ * First we convert x (true exponent) to exp for the float representation
+ * If exp is too small, return 0, cannot be reperesented
+ * If value is denoramlised, return the correct single bit in its position in the frac field
+ * If value is noramlised, return just the exp, as there is implicit 1 so no need for bits in frac
+ * Else, number is too big, so return inifity , exp all 1
  */
 unsigned floatPower2(int x)
 {
-  return 2;
+  int exp = 127 + x;
+  if (exp < -22)
+    return 0;
+  if (exp >= -22 & exp <= 0)
+    return (1 << (x + 149));
+  if (exp <= 254)
+    return (exp << 23);
+  else
+    return (0xFF << 23);
 }
